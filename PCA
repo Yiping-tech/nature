@@ -1,0 +1,44 @@
+# ----------------------------------------------------------------------
+# PCA Analysis
+
+# ----------------------------------------------------------------------
+# User parameters (modify these as needed)
+# ----------------------------------------------------------------------
+data_file <- "./Analyze/A.xlsx"
+sheet_name <- 2                         # sheet number or name
+sample_id_col <- "Sample_id"            # column containing sample IDs
+group_col <- "Group"                     # column containing group labels
+output_plot <- "./pca_plot.tiff"         # path to save the plot
+
+# Optional: set factor levels for groups if desired
+group_levels <- c("Health", "Post", "Pre")   # adjust to your actual groups
+
+# ----------------------------------------------------------------------
+# Step 1: Read and prepare the data
+# ----------------------------------------------------------------------
+df_raw <- read_xlsx(data_file, sheet = sheet_name)
+
+# Ensure all columns except ID and group are numeric
+df <- df_raw %>%
+    mutate(across(-c(all_of(sample_id_col), all_of(group_col)), 
+                  ~ as.numeric(as.character(.x))))
+
+# Remove rows with any missing values (necessary for PCA)
+df <- na.omit(df)
+
+# Check group distribution
+print(table(df[[group_col]]))
+
+# ----------------------------------------------------------------------
+# Step 2: Perform PCA
+# ----------------------------------------------------------------------
+# Convert sample_id to row names and remove the group column
+pca_data <- df %>%
+    column_to_rownames(var = sample_id_col) %>%
+    select(-all_of(group_col))
+
+# Run PCA with scaling (correlation matrix)
+pca_result <- prcomp(pca_data, scale. = TRUE)
+
+# Calculate variance explained by each PC
+var_explained <- pca_result$sdev^2 / sum(pca_result$sdev^2)
