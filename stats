@@ -1,0 +1,17 @@
+poly_pval <- NA; poly_aic <- NA
+  poly_degree <- min(2, length(unique(model_data[[pred]])) - 1)
+  if (poly_degree > 0) {
+    poly_formula <- as.formula(paste0(
+      outcome, " ~ poly(", pred, ", ", poly_degree, ") + ",
+      paste(covariates, collapse = "+")
+    ))
+    tryCatch({
+      poly_model <- lm(poly_formula, data = model_data)
+      poly_summary <- summary(poly_model)
+      f_stat <- poly_summary$fstatistic
+      poly_pval <- pf(f_stat[1], f_stat[2], f_stat[3], lower.tail = FALSE)
+      poly_aic <- AIC(poly_model)
+    }, error = function(e) {
+      cat("Polynomial error for", pred, ":", conditionMessage(e), "\n")
+    })
+  }
