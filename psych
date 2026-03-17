@@ -1,0 +1,92 @@
+# ----------------------------------------------------------------------
+# Spearman correlation analysis
+# ----------------------------------------------------------------------
+# Load required packages
+library(psych)      # for corr.test()
+library(dplyr)      # for data manipulation (filter, rename, etc.)
+library(openxlsx)   # for reading Excel files (or use readxl)
+
+# ----------------------------------------------------------------------
+# User parameters (modify these as needed)
+# ----------------------------------------------------------------------
+data_file <- "./Analyze/A.xlsx"  # path to your Excel file
+sheet_index <- 1    # sheet number or name to analyse (e.g., 1, 2, or "cluster1")
+output_file <- "./correlation_results.xlsx"  # where to save the result
+
+# ----------------------------------------------------------------------
+# Step 1: Read the data
+# ----------------------------------------------------------------------
+# The Excel sheet should contain a numeric matrix with row names in the first column.
+data_matrix <- read.xlsx(data_file, sheet = sheet_index, rowNames = TRUE)
+
+# Ensure the data is numeric (already should be, but just in case)
+data_matrix <- as.matrix(data_matrix)
+mode(data_matrix) <- "numeric"
+
+# ----------------------------------------------------------------------
+# Step 2: Compute Spearman correlations
+# ----------------------------------------------------------------------
+# corr.test calculates correlation coefficients and p-values.
+# method = "spearman" : Spearman rank correlation
+# adjust = "none"     : no multiple testing correction (applied later if needed)
+# ci = FALSE          : skip confidence intervals (faster)
+# use = "pairwise"    : use all available pairs (ignore missing values pairwise)
+result <- corr.test(data_matrix, method = "spearman", adjust = "none",
+                    ci = FALSE, use = "pairwise")
+
+# Extract correlation matrix and p-value matrix
+corr_matrix <- result$r
+p_matrix    <- result$p
+
+# ----------------------------------------------------------------------
+# Step 3: Convert matrices to long format
+# ----------------------------------------------------------------------
+corr_long <- as.data.frame(as.table(corr_matrix))
+p_long    <- as.data.frame(as.table(p_matrix))
+
+# Combine correlation and p-value into one data frame
+cor_data <- cbind(corr_long, p_long[,3])  # third column contains the p-values
+names(cor_data) <- c("node1", "node2", "corr", "p")
+
+# Remove any rows that are not needed (optional cleanup)
+# cor_data <- cor_data[complete.cases(cor_data),]
+
+# ----------------------------------------------------------------------
+# Step 4: Filter out self-correlations and non‑significant pairs (p >= 0.05)
+# ----------------------------------------------------------------------
+cor_data_filtered <- filter(cor_data, node1 != node2 & p < 0.05)
+
+# ----------------------------------------------------------------------
+# Step 5: (Optional) Compute node frequencies (number of connections per node)
+# ----------------------------------------------------------------------
+freq_table <- table(cor_data_filtered$node1) %>%
+    as.data.frame() %>%
+    dplyr::rename(node1 = Var1, freq = Freq)
+
+# Merge frequency information back
+cor_data_filtered <- merge(cor_data_filtered, freq_table, by = "node1", all.x = TRUE)
+
+# ----------------------------------------------------------------------
+# Step 6: Remove duplicate undirected pairs (e.g., A–B and B–A)
+# ----------------------------------------------------------------------
+# Create a sorted concatenated identifier for each pair
+cor_data_filtered$pair_id <- apply(cor_data_filtered[, c("node1", "node2")], 1,
+                                   function(row) {
+                                       sorted <- sort(row)
+                                       paste(sorted, collapse = "_")
+                                   })
+
+# Keep only the first occurrence of each pair_id
+cor_data_final <- cor_data_filtered[!duplicated(cor_data_filtered$pair_id), ]
+
+# Drop the temporary pair_id column if desired
+cor_data_final$pair_id <- NULL
+
+# ----------------------------------------------------------------------
+# Step 7: Save the result
+# ----------------------------------------------------------------------
+write.xlsx(cor_data_final, output_file, rowNames = FALSE)
+
+# ----------------------------------------------------------------------
+# End of template
+# ----------------------------------------------------------------------
