@@ -168,5 +168,100 @@ Run examples
 
 ## List all the symbols defined in this package:
 ls('package:BiocGenerics')
+# ----------------------------------------------------------------------
+# Load required packages
+# ----------------------------------------------------------------------
+# Install if necessary:
+# if (!require("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# BiocManager::install(c("Biobase", "mfuzz"))
 
+library(Biobase)        # for ExpressionSet objects
+library(mfuzz)          # for fuzzy c-means clustering
+
+# ----------------------------------------------------------------------
+# Data preparation
+# ----------------------------------------------------------------------
+# Assume you have a numeric matrix `expr_matrix`:
+#   rows = features (e.g., genes/proteins)
+#   columns = samples (e.g., time points or experimental conditions)
+# The matrix should be pre-processed (e.g., log2-transformed, normalized),
+# and missing values should be imputed.
+
+# Example: read your data from a file
+# expr_matrix <- as.matrix(read.csv("your_data.csv", row.names = 1))
+
+# ----------------------------------------------------------------------
+# Create an ExpressionSet object (required by mfuzz)
+# ----------------------------------------------------------------------
+# The ExpressionSet object holds the expression matrix and optional metadata.
+# For basic usage, only the expression matrix is needed.
+expr_set <- ExpressionSet(assayData = expr_matrix)
+
+# ----------------------------------------------------------------------
+# Standardize the data (recommended for mfuzz)
+# ----------------------------------------------------------------------
+# The function `standardise` centers and scales each feature (row)
+# to mean 0 and standard deviation 1.
+expr_set <- standardise(expr_set)
+
+# ----------------------------------------------------------------------
+# Determine the fuzzification parameter 'm' (using mestimate)
+# ----------------------------------------------------------------------
+m <- mestimate(expr_set)
+
+# ----------------------------------------------------------------------
+# Set the number of clusters
+# ----------------------------------------------------------------------
+# You can choose this number based on prior knowledge or use evaluation
+# functions like `cselection` or `Dmin`.
+cluster_num <- 4   # change this to your desired number of clusters
+
+# ----------------------------------------------------------------------
+# Set random seed for reproducibility
+# ----------------------------------------------------------------------
+set.seed(123)      # you can use any integer
+
+# ----------------------------------------------------------------------
+# Perform fuzzy c-means clustering
+# ----------------------------------------------------------------------
+cl <- mfuzz(expr_set, c = cluster_num, m = m)
+
+# ----------------------------------------------------------------------
+# Inspect the clustering results
+# ----------------------------------------------------------------------
+# Size of each cluster (number of features assigned to each cluster)
+cl$size
+
+# Cluster membership matrix (each feature's membership values for all clusters)
+head(cl$membership)
+
+# Cluster centers (representative expression profiles for each cluster)
+cl$centers
+
+# Hard cluster assignment (the cluster with the highest membership for each feature)
+cluster_assignment <- cl$cluster
+head(cluster_assignment)
+
+# ----------------------------------------------------------------------
+# Visualise the clusters
+# ----------------------------------------------------------------------
+# Plot the expression profiles of each cluster.
+# The argument `mfrow` sets the layout; adjust it to your cluster number.
+mfuzz.plot(expr_set, cl = cl, mfrow = c(2, 2))
+
+# You can also plot individual clusters with more control:
+# for (i in 1:cluster_num) {
+#   mfuzz.plot(expr_set, cl = cl, which.cluster = i)
+# }
+
+# ----------------------------------------------------------------------
+# Save the results (optional)
+# ----------------------------------------------------------------------
+# Save the full clustering object
+# saveRDS(cl, file = "mfuzz_clustering_results.rds")
+
+# Save the hard cluster assignments to a CSV file
+# write.csv(data.frame(cluster = cluster_assignment), 
+#           file = "cluster_assignments.csv")
 
