@@ -1,0 +1,172 @@
+BiocGenerics-package {BiocGenerics}	R Documentation
+S4 generic functions for Bioconductor
+Description
+S4 generic functions needed by many Bioconductor packages.
+
+Details
+We divide the generic functions defined in the BiocGenerics package in 2 categories: (1) functions already defined in base R and explicitly promoted to generics in BiocGenerics, and (2) Bioconductor specific generics.
+
+(1) Functions defined in base R and explicitly promoted to generics in the BiocGenerics package
+Generics for functions defined in package base:
+
+BiocGenerics::aperm
+
+BiocGenerics::append
+
+BiocGenerics::as.data.frame
+
+BiocGenerics::as.list
+
+BiocGenerics::as.vector
+
+BiocGenerics::rbind, BiocGenerics::cbind
+
+BiocGenerics::do.call
+
+BiocGenerics::duplicated, BiocGenerics::anyDuplicated
+
+BiocGenerics::eval
+
+Extremes: BiocGenerics::pmax, BiocGenerics::pmin, BiocGenerics::pmax.int, BiocGenerics::pmin.int
+
+BiocGenerics::format
+
+funprog: BiocGenerics::Reduce, BiocGenerics::Filter, BiocGenerics::Find, BiocGenerics::Map, BiocGenerics::Position
+
+BiocGenerics::get, BiocGenerics::mget
+
+BiocGenerics::grep, BiocGenerics::grepl
+
+BiocGenerics::is.unsorted
+
+BiocGenerics::lapply, BiocGenerics::sapply
+
+BiocGenerics::mapply
+
+BiocGenerics::match, BiocGenerics::%in%
+
+BiocGenerics::nrow, BiocGenerics::ncol, BiocGenerics::NROW, BiocGenerics::NCOL
+
+BiocGenerics::order
+
+BiocGenerics::paste
+
+BiocGenerics::rank
+
+BiocGenerics::rep.int
+
+BiocGenerics::rownames, BiocGenerics::rownames<-, BiocGenerics::colnames, BiocGenerics::colnames<-
+
+BiocGenerics::saveRDS
+
+sets: BiocGenerics::union, BiocGenerics::intersect, BiocGenerics::setdiff
+
+BiocGenerics::sort
+
+BiocGenerics::start, BiocGenerics::start<-, BiocGenerics::end, BiocGenerics::end<-, BiocGenerics::width, BiocGenerics::width<-, BiocGenerics::pos
+
+BiocGenerics::subset
+
+BiocGenerics::t
+
+BiocGenerics::table
+
+BiocGenerics::tapply
+
+BiocGenerics::unique
+
+BiocGenerics::unlist
+
+BiocGenerics::unsplit
+
+BiocGenerics::which
+
+BiocGenerics::which.min, BiocGenerics::which.max
+
+Generics for functions defined in package utils:
+
+BiocGenerics::relist
+
+Generics for functions defined in package graphics:
+
+BiocGenerics::boxplot
+
+BiocGenerics::image
+
+Generics for functions defined in package stats:
+
+BiocGenerics::density
+
+BiocGenerics::residuals
+
+BiocGenerics::weights
+
+BiocGenerics::xtabs
+
+(2) Bioconductor specific generics
+annotation, annotation<-
+
+combine
+
+containsOutOfMemoryData
+
+dbconn, dbfile
+
+counts, counts<-, design, design<-, dispTable, dispTable<-, sizeFactors, sizeFactors<-, conditions, conditions<-, estimateSizeFactors, estimateDispersions, plotDispEsts
+
+dims, nrows, ncols,
+
+fileName
+
+normalize
+
+Ontology
+
+organism, organism<-, species, species<-
+
+path, path<-, basename, basename<-, dirname, dirname<-
+
+plotMA
+
+plotPCA
+
+score, score<-
+
+strand, strand<-, invertStrand
+
+toTable
+
+type, type<-
+
+updateObject
+
+Note
+More generics can be added on request by sending an email to the Bioc-devel mailing list:
+
+http://bioconductor.org/help/mailing-list/
+
+Things that should NOT be added to the BiocGenerics package:
+
+Internal generic primitive functions like length, dim, `dim<-`, etc... See ?InternalMethods for the complete list. There are a few exceptions though, that is, the BiocGenerics package may actually redefine a few of those internal generic primitive functions as S4 generics when for example the signature of the internal generic primitive is not appropriate (this is the case for BiocGenerics::cbind).
+
+S3 and S4 group generic functions like Math, Ops, etc... See ?groupGeneric and ?S4groupGeneric for the complete list.
+
+Generics already defined in the stats4 package.
+
+Author(s)
+The Bioconductor Dev Team
+
+See Also
+showMethods for displaying a summary of the methods defined for a given generic function.
+
+selectMethod for getting the definition of a specific method.
+
+setGeneric and setMethod for defining generics and methods.
+
+Examples
+Run examples
+
+## List all the symbols defined in this package:
+ls('package:BiocGenerics')
+
+
