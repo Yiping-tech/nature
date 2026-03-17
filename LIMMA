@@ -1,0 +1,71 @@
+Description
+LIMMA is a package for the analysis of gene expression microarray data, especially the use of linear models for analysing designed experiments and the assessment of differential expression. LIMMA provides the ability to analyse comparisons between many RNA targets simultaneously in arbitrary complicated designed experiments. Empirical Bayesian methods are used to provide stable results even when the number of arrays is small. The linear model and differential expression functions apply to all gene expression technologies, including microarrays, RNA-seq and quantitative PCR.
+
+Details
+There are three types of documentation available:
+
+The LIMMA User's Guide can be reached through the "User Guides and Package Vignettes" links at the top of the LIMMA contents page. The function limmaUsersGuide gives the file location of the User's Guide.
+
+An overview of limma functions grouped by purpose is contained in the numbered chapters at the foot of the LIMMA package index page, of which this page is the first.
+
+The LIMMA contents page gives an alphabetical index of detailed help topics.
+
+The function changeLog displays the record of changes to the package.
+
+# Load the limma package (install if necessary)
+# install.packages("BiocManager")
+# BiocManager::install("limma")
+library(limma)
+
+# ----------------------------------------------------------------------
+# Data preparation (adjust according to your own data structure)
+# ----------------------------------------------------------------------
+# Assume you have:
+#   expr_data : a numeric matrix with genes in rows and samples in columns.
+#   group     : a factor with two levels indicating the sample groups.
+#
+# Example:
+#   group <- factor(c(rep("control", 3), rep("treatment", 3)),
+#                   levels = c("control", "treatment"))
+# ----------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
+# Step 1: Create a design matrix (no intercept – each group has its own coefficient)
+# ----------------------------------------------------------------------
+design <- model.matrix(~0 + group)
+colnames(design) <- levels(group)   # name columns explicitly (optional but helpful)
+
+# ----------------------------------------------------------------------
+# Step 2: Define the contrast of interest
+#         (e.g., compare treatment vs control)
+# ----------------------------------------------------------------------
+# Replace "treatment" and "control" with your actual group names
+contrast <- "treatment - control"
+contrast.matrix <- makeContrasts(contrasts = contrast, levels = design)
+
+# ----------------------------------------------------------------------
+# Step 3: Fit the linear model for each gene
+# ----------------------------------------------------------------------
+fit <- lmFit(expr_data, design)
+
+# ----------------------------------------------------------------------
+# Step 4: Apply the contrast to the fitted model
+# ----------------------------------------------------------------------
+fit2 <- contrasts.fit(fit, contrast.matrix)
+
+# ----------------------------------------------------------------------
+# Step 5: Empirical Bayes moderation (stabilises variance estimates)
+# ----------------------------------------------------------------------
+fit2 <- eBayes(fit2)
+
+# ----------------------------------------------------------------------
+# Step 6: Extract the full results table (all genes)
+# ----------------------------------------------------------------------
+results <- topTable(fit2, adjust = "BH", number = Inf)
+
+# View a summary of how many genes or proteins are up/down-regulated
+# (you can set your own thresholds for logFC and P.Value)
+summary(decideTests(fit2, p.value = 0.05, lfc = 0.2))
+
+# Optionally save the results
+# write.csv(results, file = "differential_expression_results.csv")
