@@ -1,0 +1,38 @@
+# Get unique group identifiers
+unique_groups <- unique(df[[group_col]])
+
+# Create an empty results data frame
+summary_df <- data.frame(
+  Group = character(),
+  stringsAsFactors = FALSE
+)
+# Add columns for each value column (mean)
+for (v in value_cols) {
+  summary_df[[paste0("mean_", v)]] <- numeric()
+}
+# Add column for minimum p-value
+summary_df[["min_pvalue"]] <- numeric()
+
+# Loop over each group
+for (grp in unique_groups) {
+  # Subset rows belonging to the current group
+  subset_df <- df[df[[group_col]] == grp, ]
+  
+  # Calculate means for each value column
+  means <- sapply(value_cols, function(v) mean(subset_df[[v]], na.rm = TRUE))
+  # Calculate minimum p-value
+  min_p <- min(subset_df[[pvalue_col]], na.rm = TRUE)
+  
+  # Create a row for this group
+  new_row <- data.frame(
+    Group = grp,
+    t(means),                 # convert means vector to columns
+    min_pvalue = min_p,
+    stringsAsFactors = FALSE
+  )
+  # Ensure column names match
+  colnames(new_row) <- c("Group", paste0("mean_", value_cols), "min_pvalue")
+  
+  # Append to summary_df
+  summary_df <- rbind(summary_df, new_row)
+}
