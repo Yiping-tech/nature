@@ -1,0 +1,18 @@
+gam_coef <- NA; gam_pval <- NA; gam_aic <- NA
+  if (length(unique(model_data[[pred]])) > 1) {
+    # Build formula: outcome ~ s(predictor, k = ...) + covariates
+    gam_formula <- as.formula(paste0(
+      outcome, " ~ s(", pred, ", k = min(5, length(unique(", pred, "))-1)) + ",
+      paste(covariates, collapse = "+")
+    ))
+    gam_model <- try(mgcv::gam(gam_formula, data = model_data, method = "REML"), silent = TRUE)
+    if (!inherits(gam_model, "try-error")) {
+      gam_summary <- summary(gam_model)
+      # Extract smooth term information (if available)
+      if (!is.null(gam_summary$s.table) && nrow(gam_summary$s.table) > 0) {
+        gam_coef <- gam_summary$s.table[1, 1]   # e.g. F statistic
+        gam_pval <- gam_summary$s.table[1, 4]   # p-value for the smooth term
+        gam_aic <- AIC(gam_model)
+      }
+    }
+  }
