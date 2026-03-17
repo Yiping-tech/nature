@@ -1,0 +1,17 @@
+ns_pval <- NA; ns_aic <- NA
+  if (length(unique(model_data[[pred]])) > 3) {
+    ns_formula <- as.formula(paste0(
+      outcome, " ~ splines::ns(", pred, ", df = min(3, length(unique(", pred, "))-1)) + ",
+      paste(covariates, collapse = "+")
+    ))
+    tryCatch({
+      ns_model <- lm(ns_formula, data = model_data)
+      ns_summary <- summary(ns_model)
+      # Overall F-test p-value for the model (including the spline term)
+      f_stat <- ns_summary$fstatistic
+      ns_pval <- pf(f_stat[1], f_stat[2], f_stat[3], lower.tail = FALSE)
+      ns_aic <- AIC(ns_model)
+    }, error = function(e) {
+      cat("Natural spline error for", pred, ":", conditionMessage(e), "\n")
+    })
+  }
