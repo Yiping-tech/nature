@@ -1,0 +1,25 @@
+p <- ggplot(plot_data, aes(x = Condition, y = !!sym(group_col), 
+                           size = count, color = logFC)) +
+  geom_point(alpha = 0.8) +
+  scale_x_discrete(position = "top") +
+  scale_y_discrete(position = "right") +
+  scale_color_gradient2(
+    low = "#2166AC", mid = "#F7F7F7", high = "#D6604D",
+    midpoint = 0, limits = c(-1, 1),
+    oob = scales::squish
+  ) +
+  scale_size_continuous(
+    range = c(5, 10),
+    breaks = seq(5, 40, length.out = 8),
+    name = "Count"
+  ) +
+  labs(x = NULL, y = NULL) +
+  theme_bw() +
+  theme(
+    panel.border = element_rect(color = "black", size = 1.2),
+    axis.text.x.top = element_text(face = "bold", angle = 90, hjust = 0, size = 12),
+    axis.text.y.right = element_text(face = "bold", size = 12),
+    panel.grid = element_blank(),
+    legend.position = "right",
+    legend.box = "vertical"
+  )
